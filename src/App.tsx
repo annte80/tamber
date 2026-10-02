@@ -43,6 +43,21 @@ function makeImageElement(id: string, src: string): ImageElement {
   };
 }
 
+function makeShapeElement(id: string, shape: 'rectangle' | 'arrow'): import('@/types/tamber').ShapeElement {
+  return {
+    id,
+    type: 'shape',
+    x: 10 + Math.random() * 20,
+    y: 10 + Math.random() * 20,
+    width: 30,
+    height: shape === 'arrow' ? 12 : 20,
+    rotation: 0,
+    layer: 1,
+    shape,
+    fillColor: '#3b82f6',
+  };
+}
+
 function App() {
   const [elements, setElements] = useState<TamberElement[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -105,6 +120,12 @@ function App() {
 
   const addTextElement = () => {
     const newEl = makeTextElement(`text-${Date.now()}`);
+    setElements((prev) => [...prev, newEl]);
+    setSelectedId(newEl.id);
+  };
+
+  const addShapeElement = (shape: 'rectangle' | 'arrow') => {
+    const newEl = makeShapeElement(`shape-${Date.now()}`, shape);
     setElements((prev) => [...prev, newEl]);
     setSelectedId(newEl.id);
   };
@@ -174,6 +195,18 @@ function App() {
           {uploading ? 'Uploading...' : '+ Add Image'}
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageFile} className="hidden" />
+        <button
+          onClick={() => addShapeElement('rectangle')}
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition"
+        >
+          + Rectangle
+        </button>
+        <button
+          onClick={() => addShapeElement('arrow')}
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition"
+        >
+          + Arrow
+        </button>
       </div>
       <div className="flex gap-4 items-start w-full max-w-5xl">
         <Canvas
