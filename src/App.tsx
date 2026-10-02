@@ -88,6 +88,23 @@ function App() {
     setSelectedId(newEl.id);
   };
 
+  const deleteSelected = () => {
+    if (!selectedId) return;
+    setElements((prev) => prev.filter((el) => el.id !== selectedId));
+    setSelectedId(null);
+  };
+
+  const changeLayer = (direction: 'forward' | 'backward') => {
+    if (!selectedId) return;
+    setElements((prev) =>
+      prev.map((el) =>
+        el.id === selectedId
+          ? { ...el, layer: direction === 'forward' ? el.layer + 1 : Math.max(0, el.layer - 1) }
+          : el,
+      ),
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -116,7 +133,12 @@ function App() {
           onSelect={setSelectedId}
           onChange={updateElement}
         />
-        <PropertyPanel element={selectedElement} onChange={updateElement} />
+        <PropertyPanel
+          element={selectedElement}
+          onChange={updateElement}
+          onDelete={deleteSelected}
+          onLayerChange={changeLayer}
+        />
       </div>
     </div>
   );
