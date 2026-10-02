@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { TextElement } from '@/types/tamber';
 import { Canvas } from '@/components/Canvas';
 import { PropertyPanel } from '@/components/PropertyPanel';
+import { createPresentation, loadPresentation, savePresentation, getStoredEditToken } from '@/lib/supabase';
 
 function makeTextElement(id: string): TextElement {
   return {
@@ -22,10 +23,58 @@ function makeTextElement(id: string): TextElement {
 }
 
 function App() {
-  const [elements, setElements] = useState<TextElement[]>([
-    { ...makeTextElement('test-1'), x: 20, y: 30, text: 'Double-click to edit me' },
-  ]);
+  const [elements, setElements] = useState<TextElement[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editToken, setEditToken] = useState<string | null>(null);
+  const [shareCode, setShareCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasLoadedOnce = useRef(false);
+
+  // Load existing work, or start a brand new presentation
+  useEffect(() => {
+    (async () => {
+      const existingToken = getStoredEditToken();
+      try {
+        if (existingToken) {
+          const presentation = await loadPresentation(existingToken);
+          setElements((presentation.slides[0]?.elements as TextElement[]) ?? []);
+          setEditToken(existingToken);
+        } else {
+          const { editToken: newToken, shareCode: newShareCode } = await createPresentation();
+          setEditToken(newToken);
+          setShareCode(newShareCode);
+        }
+      } catch (err) {
+        console.error('Failed to load/create presentation', err);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  // Auto-save, debounced, whenever elements change
+  useEffect(() => {
+    if (loading || !editToken) return;
+    if (!hasLoadedOnce.current) {
+      hasLoadedOnce.current = true;
+      return;
+    }
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    setSaveStatus('saving');
+    saveTimer.current = setTimeout(async () => {
+      try {
+        await savePresentation(editToken, 'Untitled Presentation', elements);
+        setSaveStatus('saved');
+      } catch (err) {
+        console.error('Save failed', err);
+      }
+    }, 800);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements, editToken, loading]);
 
   const selectedElement = elements.find((el) => el.id === selectedId) ?? null;
 
@@ -39,9 +88,21 @@ function App() {
     setSelectedId(newEl.id);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-slate-400">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center px-4 py-8 gap-4">
       <h1 className="text-xl font-bold text-white">Tamber — canvas test</h1>
+      <p className="text-xs text-slate-500">
+        {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : ''}
+        {shareCode && <span className="ml-3">Share code: {shareCode}</span>}
+      </p>
       <button
         onClick={addElement}
         className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold transition"
