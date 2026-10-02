@@ -3,21 +3,33 @@ import type { TextElement } from '@/types/tamber';
 import { CanvasElement } from './CanvasElement';
 
 interface CanvasProps {
-  element: TextElement;
+  elements: TextElement[];
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
   onChange: (updated: TextElement) => void;
 }
 
-export function Canvas({ element, onChange }: CanvasProps) {
+export function Canvas({ elements, selectedId, onSelect, onChange }: CanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div
         ref={canvasRef}
+        onMouseDown={() => onSelect(null)}
         className="relative w-full bg-slate-900 border border-slate-700 rounded-lg overflow-hidden"
         style={{ aspectRatio: '16 / 9' }}
       >
-        <CanvasElement element={element} canvasRef={canvasRef} onChange={onChange} />
+        {elements.map((el) => (
+          <CanvasElement
+            key={el.id}
+            element={el}
+            canvasRef={canvasRef}
+            selected={el.id === selectedId}
+            onSelect={() => onSelect(el.id)}
+            onChange={onChange}
+          />
+        ))}
       </div>
     </div>
   );
