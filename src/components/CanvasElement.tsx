@@ -4,10 +4,12 @@ import type { TextElement } from '@/types/tamber';
 interface CanvasElementProps {
   element: TextElement;
   canvasRef: React.RefObject<HTMLDivElement>;
+  selected: boolean;
+  onSelect: () => void;
   onChange: (updated: TextElement) => void;
 }
 
-export function CanvasElement({ element, canvasRef, onChange }: CanvasElementProps) {
+export function CanvasElement({ element, canvasRef, selected, onSelect, onChange }: CanvasElementProps) {
   const [editing, setEditing] = useState(false);
   const dragState = useRef<{ startX: number; startY: number; elX: number; elY: number } | null>(null);
   const resizeState = useRef<{ startX: number; startY: number; elW: number; elH: number } | null>(null);
@@ -18,6 +20,7 @@ export function CanvasElement({ element, canvasRef, onChange }: CanvasElementPro
   }, [canvasRef]);
 
   const handleDragStart = (e: React.MouseEvent) => {
+    onSelect();
     if (editing) return;
     e.stopPropagation();
     dragState.current = { startX: e.clientX, startY: e.clientY, elX: element.x, elY: element.y };
@@ -67,7 +70,10 @@ export function CanvasElement({ element, canvasRef, onChange }: CanvasElementPro
   return (
     <div
       onMouseDown={handleDragStart}
-      onDoubleClick={() => setEditing(true)}
+      onDoubleClick={() => {
+        onSelect();
+        setEditing(true);
+      }}
       style={{
         position: 'absolute',
         left: `${element.x}%`,
@@ -77,8 +83,11 @@ export function CanvasElement({ element, canvasRef, onChange }: CanvasElementPro
         transform: `rotate(${element.rotation}deg)`,
         cursor: editing ? 'text' : 'move',
         userSelect: editing ? 'text' : 'none',
+        zIndex: element.layer,
       }}
-      className="border border-dashed border-blue-400/60 flex items-center"
+      className={`border flex items-center ${
+        selected ? 'border-dashed border-blue-400' : 'border-transparent'
+      }`}
     >
       {editing ? (
         <textarea
@@ -108,10 +117,12 @@ export function CanvasElement({ element, canvasRef, onChange }: CanvasElementPro
         </div>
       )}
 
-      <div
-        onMouseDown={handleResizeStart}
-        className="absolute -right-1.5 -bottom-1.5 w-3 h-3 bg-blue-400 rounded-sm cursor-nwse-resize"
-      />
+      {selected && (
+        <div
+          onMouseDown={handleResizeStart}
+          className="absolute -right-1.5 -bottom-1.5 w-3 h-3 bg-blue-400 rounded-sm cursor-nwse-resize"
+        />
+      )}
     </div>
   );
 }
