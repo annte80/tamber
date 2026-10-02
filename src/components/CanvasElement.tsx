@@ -1,12 +1,12 @@
 import { useRef, useState, useCallback } from 'react';
-import type { TextElement } from '@/types/tamber';
+import type { TamberElement } from '@/types/tamber';
 
 interface CanvasElementProps {
-  element: TextElement;
+  element: TamberElement;
   canvasRef: React.RefObject<HTMLDivElement>;
   selected: boolean;
   onSelect: () => void;
-  onChange: (updated: TextElement) => void;
+  onChange: (updated: TamberElement) => void;
 }
 
 export function CanvasElement({ element, canvasRef, selected, onSelect, onChange }: CanvasElementProps) {
@@ -71,8 +71,10 @@ export function CanvasElement({ element, canvasRef, selected, onSelect, onChange
     <div
       onMouseDown={handleDragStart}
       onDoubleClick={() => {
-        onSelect();
-        setEditing(true);
+        if (element.type === 'text') {
+          onSelect();
+          setEditing(true);
+        }
       }}
       style={{
         position: 'absolute',
@@ -85,36 +87,50 @@ export function CanvasElement({ element, canvasRef, selected, onSelect, onChange
         userSelect: editing ? 'text' : 'none',
         zIndex: element.layer,
       }}
-      className={`border flex items-center ${
+      className={`border flex items-center overflow-hidden ${
         selected ? 'border-dashed border-blue-400' : 'border-transparent'
       }`}
     >
-      {editing ? (
-        <textarea
-          autoFocus
-          value={element.text}
-          onChange={(e) => onChange({ ...element, text: e.target.value })}
-          onBlur={() => setEditing(false)}
-          className="w-full h-full bg-transparent resize-none outline-none p-1"
+      {element.type === 'text' &&
+        (editing ? (
+          <textarea
+            autoFocus
+            value={element.text}
+            onChange={(e) => onChange({ ...element, text: e.target.value })}
+            onBlur={() => setEditing(false)}
+            className="w-full h-full bg-transparent resize-none outline-none p-1"
+            style={{
+              fontFamily: element.fontFamily,
+              fontSize: `${element.fontSize}px`,
+              color: element.fontColor,
+              textAlign: element.textAlign,
+            }}
+          />
+        ) : (
+          <div
+            className="w-full h-full p-1 pointer-events-none"
+            style={{
+              fontFamily: element.fontFamily,
+              fontSize: `${element.fontSize}px`,
+              color: element.fontColor,
+              textAlign: element.textAlign,
+            }}
+          >
+            {element.text}
+          </div>
+        ))}
+
+      {element.type === 'image' && (
+        <img
+          src={element.src}
+          alt=""
+          draggable={false}
+          className="w-full h-full pointer-events-none"
           style={{
-            fontFamily: element.fontFamily,
-            fontSize: `${element.fontSize}px`,
-            color: element.fontColor,
-            textAlign: element.textAlign,
+            objectFit: element.fitMode === 'crop' ? 'cover' : 'fill',
+            filter: element.distortion === 'wavy' ? 'url(#tamber-wavy)' : undefined,
           }}
         />
-      ) : (
-        <div
-          className="w-full h-full p-1 pointer-events-none"
-          style={{
-            fontFamily: element.fontFamily,
-            fontSize: `${element.fontSize}px`,
-            color: element.fontColor,
-            textAlign: element.textAlign,
-          }}
-        >
-          {element.text}
-        </div>
       )}
 
       {selected && (
