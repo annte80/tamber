@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { TextElement } from '@/types/tamber';
 import { Canvas } from '@/components/Canvas';
+import { PropertyPanel } from '@/components/PropertyPanel';
 
 function makeTextElement(id: string): TextElement {
   return {
@@ -26,6 +27,8 @@ function App() {
   ]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const selectedElement = elements.find((el) => el.id === selectedId) ?? null;
+
   const updateElement = (updated: TextElement) => {
     setElements((prev) => prev.map((el) => (el.id === updated.id ? updated : el)));
   };
@@ -37,23 +40,23 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 gap-4">
+    <div className="min-h-screen flex flex-col items-center px-4 py-8 gap-4">
       <h1 className="text-xl font-bold text-white">Tamber — canvas test</h1>
-      <p className="text-slate-400 text-sm">
-        Click a box to select it, drag to move, drag the corner to resize, double-click to edit.
-      </p>
       <button
         onClick={addElement}
         className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold transition"
       >
         + Add Text Box
       </button>
-      <Canvas
-        elements={elements}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-        onChange={updateElement}
-      />
+      <div className="flex gap-4 items-start w-full max-w-5xl">
+        <Canvas
+          elements={elements}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          onChange={updateElement}
+        />
+        <PropertyPanel element={selectedElement} onChange={updateElement} />
+      </div>
     </div>
   );
 }
