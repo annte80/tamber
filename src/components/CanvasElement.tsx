@@ -133,6 +133,16 @@ export function CanvasElement({ element, canvasRef, selected, onSelect, onChange
         />
       )}
 
+      {element.type === 'shape' && element.shape === 'rectangle' && (
+        <div className="w-full h-full pointer-events-none" style={{ backgroundColor: element.fillColor }} />
+      )}
+
+      {element.type === 'shape' && element.shape === 'arrow' && (
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="w-full h-full pointer-events-none">
+          <polygon points="0,15 65,15 65,5 100,20 65,35 65,25 0,25" fill={element.fillColor} />
+        </svg>
+      )}
+
       {selected && (
         <div
           onMouseDown={handleResizeStart}
