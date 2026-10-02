@@ -1,12 +1,14 @@
 import type { TextElement } from '@/types/tamber';
-import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface PropertyPanelProps {
   element: TextElement | null;
   onChange: (updated: TextElement) => void;
+  onDelete: () => void;
+  onLayerChange: (direction: 'forward' | 'backward') => void;
 }
 
-export function PropertyPanel({ element, onChange }: PropertyPanelProps) {
+export function PropertyPanel({ element, onChange, onDelete, onLayerChange }: PropertyPanelProps) {
   if (!element) {
     return (
       <div className="w-56 shrink-0 bg-slate-900 border border-slate-700 rounded-lg p-4">
@@ -60,6 +62,31 @@ export function PropertyPanel({ element, onChange }: PropertyPanelProps) {
           })}
         </div>
       </div>
+
+      <div>
+        <label className="block text-xs font-medium text-slate-400 mb-1">Layer order</label>
+        <div className="flex gap-1">
+          <button
+            onClick={() => onLayerChange('backward')}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-slate-700 bg-slate-950 text-slate-300 hover:bg-slate-800 transition text-xs"
+          >
+            <ChevronDown className="w-3.5 h-3.5" /> Back
+          </button>
+          <button
+            onClick={() => onLayerChange('forward')}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg border border-slate-700 bg-slate-950 text-slate-300 hover:bg-slate-800 transition text-xs"
+          >
+            <ChevronUp className="w-3.5 h-3.5" /> Front
+          </button>
+        </div>
+      </div>
+
+      <button
+        onClick={onDelete}
+        className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-red-900 bg-red-950/40 text-red-400 hover:bg-red-950 transition text-sm font-medium"
+      >
+        <Trash2 className="w-4 h-4" /> Delete
+      </button>
     </div>
   );
 }
