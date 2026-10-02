@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { TextElement, TamberPresentation } from '@/types/tamber';
+import type { TamberElement, TamberPresentation } from '@/types/tamber';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -28,7 +28,7 @@ export async function loadPresentation(editToken: string): Promise<TamberPresent
   };
 }
 
-export async function savePresentation(editToken: string, title: string, elements: TextElement[]): Promise<void> {
+export async function savePresentation(editToken: string, title: string, elements: TamberElement[]): Promise<void> {
   const slides = [{ id: 'slide-1', elements }];
   const { error } = await supabase.rpc('tamber_save', {
     p_edit_token: editToken,
@@ -40,4 +40,13 @@ export async function savePresentation(editToken: string, title: string, element
 
 export function getStoredEditToken(): string | null {
   return localStorage.getItem(EDIT_TOKEN_KEY);
+}
+
+export async function uploadImage(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'png';
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('tamber-media').upload(path, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from('tamber-media').getPublicUrl(path);
+  return data.publicUrl;
 }
