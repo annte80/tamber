@@ -1,12 +1,12 @@
 import { useRef } from 'react';
-import type { TextElement } from '@/types/tamber';
+import type { TamberElement } from '@/types/tamber';
 import { CanvasElement } from './CanvasElement';
 
 interface CanvasProps {
-  elements: TextElement[];
+  elements: TamberElement[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
-  onChange: (updated: TextElement) => void;
+  onChange: (updated: TamberElement) => void;
 }
 
 export function Canvas({ elements, selectedId, onSelect, onChange }: CanvasProps) {
