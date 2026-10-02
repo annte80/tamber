@@ -88,6 +88,38 @@ export function PropertyPanel({ element, onChange, onDelete, onLayerChange }: Pr
         </div>
       )}
 
+      {element.type === 'shape' && (
+        <>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">Shape</label>
+            <div className="flex gap-1">
+              {(['rectangle', 'arrow'] as const).map((shape) => (
+                <button
+                  key={shape}
+                  onClick={() => onChange({ ...element, shape })}
+                  className={`flex-1 py-1.5 rounded-lg border capitalize text-xs transition ${
+                    element.shape === shape
+                      ? 'bg-blue-600 border-blue-500 text-white'
+                      : 'bg-slate-950 border-slate-700 text-slate-400 hover:bg-slate-800'
+                  }`}
+                >
+                  {shape}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">Fill color</label>
+            <input
+              type="color"
+              value={element.fillColor}
+              onChange={(e) => onChange({ ...element, fillColor: e.target.value })}
+              className="w-full h-9 rounded-lg border border-slate-700 bg-slate-950 cursor-pointer"
+            />
+          </div>
+        </>
+      )}
+
       <div>
         <label className="block text-xs font-medium text-slate-400 mb-1">Layer order</label>
         <div className="flex gap-1">
