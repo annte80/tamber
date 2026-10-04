@@ -1,4 +1,4 @@
-import type { TamberElement } from '@/types/tamber';
+import type { TamberElement, ElementBorder } from '@/types/tamber';
 import { AlignLeft, AlignCenter, AlignRight, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface PropertyPanelProps {
@@ -16,6 +16,10 @@ export function PropertyPanel({ element, onChange, onDelete, onLayerChange }: Pr
       </div>
     );
   }
+
+  const border: ElementBorder = element.border ?? { width: 0, color: '#ffffff', radius: 0 };
+  const setBorder = (patch: Partial<ElementBorder>) =>
+    onChange({ ...element, border: { ...border, ...patch } });
 
   return (
     <div className="w-56 shrink-0 bg-slate-900 border border-slate-700 rounded-lg p-4 flex flex-col gap-4">
@@ -119,6 +123,50 @@ export function PropertyPanel({ element, onChange, onDelete, onLayerChange }: Pr
           </div>
         </>
       )}
+
+      <div>
+        <label className="block text-xs font-medium text-slate-400 mb-1">Rotation ({Math.round(element.rotation)}°)</label>
+        <input
+          type="range"
+          min={0}
+          max={360}
+          value={element.rotation}
+          onChange={(e) => onChange({ ...element, rotation: Number(e.target.value) })}
+          className="w-full cursor-pointer"
+        />
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-slate-400 mb-1">Border</label>
+        <div className="flex gap-1 items-center">
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={border.width}
+            onChange={(e) => setBorder({ width: Math.max(0, Number(e.target.value) || 0) })}
+            title="Width"
+            className="w-14 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-white outline-none focus:border-blue-500"
+          />
+          <input
+            type="color"
+            value={border.color}
+            onChange={(e) => setBorder({ color: e.target.value })}
+            title="Color"
+            className="flex-1 h-8 rounded-lg border border-slate-700 bg-slate-950 cursor-pointer"
+          />
+          <input
+            type="number"
+            min={0}
+            max={200}
+            value={border.radius}
+            onChange={(e) => setBorder({ radius: Math.max(0, Number(e.target.value) || 0) })}
+            title="Corner roundness"
+            className="w-14 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-white outline-none focus:border-blue-500"
+          />
+        </div>
+        <p className="text-[10px] text-slate-500 mt-1">width · color · roundness</p>
+      </div>
 
       <div>
         <label className="block text-xs font-medium text-slate-400 mb-1">Layer order</label>
